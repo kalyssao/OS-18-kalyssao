@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #define MAXCHAR 1000
 
+int iterateOnEntry
+
 int main(int argc, char *argv[]) {
 	int j;
 	int found = 0;
@@ -10,20 +12,22 @@ int main(int argc, char *argv[]) {
 	char user[MAXCHAR];
 	
 	FILE *fileToSearch;
-	FILE *userEntry;
-	
+	FILE *userEntry
+
 	/* If there's no argument */ 
 	if( argc <= 1) {
-		fprintf("my-grep: searchterm [file ...]");
+		printf("my-grep: searchterm [file ...]\n");
 		exit(1);
 	}
 
 	/* Else if there's an argument but no file*/
 	else if( argc == 2) {
 		printf("Enter the text file: ");
-		fgets(user, MAXCHAR, stdin);
+		userEntry = fgets(user, MAXCHAR, stdin);
 	}
 	
+	/* if empty string */
+
 	/* Else if there are arguments */
 	else {
 
@@ -33,7 +37,7 @@ int main(int argc, char *argv[]) {
 
 			/* Can it be opened? */			
 			if( fileToSearch == NULL) {
-				fprintf("my-grep: cannot open file");
+				printf("my-grep: cannot open file \n");
 				exit(1);	
 			}
 	
@@ -53,13 +57,13 @@ int main(int argc, char *argv[]) {
 				}
 				
 				if( found == 0) {
-					printf("Argument cannot be found");
+					printf("Argument cannot be found \n");
 				}
 			
 			}
-			
 			fclose(fileToSearch);
-			return(0);
+			
 		}
 	}
+return(0);
 }

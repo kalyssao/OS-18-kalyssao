@@ -2,12 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* add/remove '*' if it doesnt work 
 
-static const char filename[] = argv[j];
-*/
-
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
 	FILE *fileToCopy;
 	char str[60];
 	int j;
@@ -24,19 +20,17 @@ int main(int argc, char *argv[]){
 		
 			/* Check if the file doesn't exist */
 			if( fileToCopy == NULL) {
-				fprintf("my-cat: cannot open file \n");
+				printf("my-cat: cannot open file \n");
 				exit(1);
 			}
 			
 			/* If it does, do stuff*/
-			if( fgets(str, 60, fileToCopy) != NULL) {
+			while( fgets(str, 60, fileToCopy) != NULL) {
 				fputs(str, fileToCopy);
 				printf("%s",str);
-				fclose(fileToCopy);
-				return(0);
 			}
+			fclose(fileToCopy);
 		}
 	}
 	return(0);
 }
-/* If content not empty - if( fgets(str, 60, fileToCopy) != NULL) {*/
