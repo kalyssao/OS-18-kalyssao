@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[]) {
 	FILE *fileToCopy;
-	char str[60];
+	char str[10000];
 	int j;
 	
 	/* Checking if no file is specified */
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 			}
 			
 			/* If it does, do stuff*/
-			while( fgets(str, 60, fileToCopy) != NULL) {
+			while( fgets(str, 10000, fileToCopy) != NULL) {
 				fputs(str, fileToCopy);
 				printf("%s",str);
 			}
