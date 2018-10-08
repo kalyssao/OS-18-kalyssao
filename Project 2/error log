@@ -1,0 +1,81 @@
+wishv2.c: In function ‘tokenizeEntry’:
+wishv2.c:63:24: warning: assignment makes integer from pointer without a cast [-Wint-conversion]
+   tokenArray[position] = token;
+                        ^
+wishv2.c: In function ‘checkBuiltIn’:
+wishv2.c:86:15: warning: passing argument 1 of ‘strcmp’ makes pointer from integer without a cast [-Wint-conversion]
+   if( !strcmp(tokenArray[0], "exit")) {
+               ^~~~~~~~~~
+In file included from wishv2.c:6:0:
+/usr/include/string.h:136:12: note: expected ‘const char *’ but argument is of type ‘char’
+ extern int strcmp (const char *__s1, const char *__s2)
+            ^~~~~~
+wishv2.c:89:15: warning: passing argument 1 of ‘strcmp’ makes pointer from integer without a cast [-Wint-conversion]
+   if( !strcmp(tokenArray[0], "path")) {
+               ^~~~~~~~~~
+In file included from wishv2.c:6:0:
+/usr/include/string.h:136:12: note: expected ‘const char *’ but argument is of type ‘char’
+ extern int strcmp (const char *__s1, const char *__s2)
+            ^~~~~~
+wishv2.c:94:14: warning: passing argument 1 of ‘strcmp’ makes pointer from integer without a cast [-Wint-conversion]
+  if( !strcmp(tokenArray[0], "cd")) {
+              ^~~~~~~~~~
+In file included from wishv2.c:6:0:
+/usr/include/string.h:136:12: note: expected ‘const char *’ but argument is of type ‘char’
+ extern int strcmp (const char *__s1, const char *__s2)
+            ^~~~~~
+wishv2.c:95:22: error: ‘directoryLength’ undeclared (first use in this function)
+   for(int l = 0; l < directoryLength; ++l) {
+                      ^~~~~~~~~~~~~~~
+wishv2.c:95:22: note: each undeclared identifier is reported only once for each function it appears in
+wishv2.c:96:16: warning: passing argument 1 of ‘chdir’ makes pointer from integer without a cast [-Wint-conversion]
+    ret = chdir(tokenArray[1]);
+                ^~~~~~~~~~
+In file included from wishv2.c:3:0:
+/usr/include/unistd.h:500:12: note: expected ‘const char *’ but argument is of type ‘char’
+ extern int chdir (const char *__path) __THROW __nonnull ((1)) __wur;
+            ^~~~~
+wishv2.c:104:14: warning: passing argument 1 of ‘strcmp’ makes pointer from integer without a cast [-Wint-conversion]
+  if( !strcmp(tokenArray[0], "path")) {
+              ^~~~~~~~~~
+In file included from wishv2.c:6:0:
+/usr/include/string.h:136:12: note: expected ‘const char *’ but argument is of type ‘char’
+ extern int strcmp (const char *__s1, const char *__s2)
+            ^~~~~~
+wishv2.c: In function ‘main’:
+wishv2.c:133:37: warning: pointer targets in passing argument 2 of ‘getline’ differ in signedness [-Wpointer-sign]
+    memoryRead = getline(&userEntry, &bufsize, stdin);
+                                     ^
+In file included from wishv2.c:4:0:
+/usr/include/stdio.h:616:20: note: expected ‘size_t * restrict {aka long unsigned int * restrict}’ but argument is of type ‘ssize_t * {aka long int *}’
+ extern _IO_ssize_t getline (char **__restrict __lineptr,
+                    ^~~~~~~
+wishv2.c:151:19: warning: passing argument 1 of ‘access’ makes pointer from integer without a cast [-Wint-conversion]
+        if( access(pathNames[x], X_OK) == 0) {
+                   ^~~~~~~~~
+In file included from wishv2.c:3:0:
+/usr/include/unistd.h:290:12: note: expected ‘const char *’ but argument is of type ‘char’
+ extern int access (const char *__name, int __type) __THROW __nonnull ((1));
+            ^~~~~~
+wishv2.c:153:19: warning: passing argument 1 of ‘execv’ makes pointer from integer without a cast [-Wint-conversion]
+         if( execv(pathNames[x], execArgs) != -1) {
+                   ^~~~~~~~~
+In file included from wishv2.c:3:0:
+/usr/include/unistd.h:566:12: note: expected ‘const char *’ but argument is of type ‘char’
+ extern int execv (const char *__path, char *const __argv[])
+            ^~~~~
+wishv2.c:153:33: warning: passing argument 2 of ‘execv’ from incompatible pointer type [-Wincompatible-pointer-types]
+         if( execv(pathNames[x], execArgs) != -1) {
+                                 ^~~~~~~~
+In file included from wishv2.c:3:0:
+/usr/include/unistd.h:566:12: note: expected ‘char * const*’ but argument is of type ‘char *’
+ extern int execv (const char *__path, char *const __argv[])
+            ^~~~~
+wishv2.c:159:12: error: ‘exec’ undeclared (first use in this function); did you mean ‘execl’?
+        if( exec == -1) {
+            ^~~~
+            execl
+wishv2.c: At top level:
+wishv2.c:190:2: error: expected identifier or ‘(’ before ‘if’
+  if( argc > 1) {
+  ^~
