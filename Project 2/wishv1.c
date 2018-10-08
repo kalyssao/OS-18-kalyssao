@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 #define MAXCHAR 1000
 char builtIn[3];
 /*int interactiveMode(void) {
@@ -17,12 +19,42 @@ char builtIn[3];
 	}
 }*/
 
-//int batchMode(void){}
+/*parse entry
+int parseEntry
+//tokenising entries into the array to be used
+tok = strtok(line," ");
+k = 0;
+while( (tok = strtok(NULL, " ")) != NULL) {
+	array_args[k] = tok 
+	k++;
+}
 
+int checkBuiltIn(void){
+	const char *pathNames = [`/bin'];
+if( argv[i] == "exit") {
+	exit(0)
+if( argv[i] == "cd") {
+	if( argc == 1) {
+		chdir(argv[i+1]
+	}
+	else {
+		exit(0)
+	}
+if( argv[i] == "path") {
+	for( int j = 2; j < argc; ++j){
+		access(
+		
+	}
+}
+}	
+*/
+//check for redirect - if array contains ">"
 int main(int argc, char *argv[]) {
 	char *buffer;
 	size_t bufsize = 32;
 	size_t characters;
+	char error_message[30] = "An error has occurred\n";
+	//write(STDERR_FILENO, error_message, strlen(error_message));
 
 	buffer = (char *)malloc(bufsize * sizeof(char));
 
@@ -42,14 +74,21 @@ int main(int argc, char *argv[]) {
 				printf("Exiting..\n");
 				break;
 			}
+			else {
+				//create child process and execute
+				fork();
+				
+			}
 		}
 	}
-
+	
 	//batch mode
 	else {
-		for(int i = 1; i < argc; ++i) {//i less than 1
-		
-		}
-		
+		for( int i = 1; i < argc; ++i) {//i less than 1
+			if( argv[i] == "exit") {
+				exit(0)
+			}
+			if( argv[i] == "cd
+		}	
 	}	
 }
