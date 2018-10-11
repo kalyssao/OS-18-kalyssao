@@ -76,7 +76,7 @@ char **tokenizeEntry(char *userEntry) {
 
 //check if argument is a builtin function
 int checkBuiltIn() {
-	//int ret;
+	int ret;
 	//no entry produces error message
 	if( tokenLength == 0) {
 		write(STDERR_FILENO, error_message, strlen(error_message));
@@ -92,13 +92,12 @@ int checkBuiltIn() {
 	}
 	//not 0 or 1 - must be cd, path with more args, or error
 	if( !strcmp(tokenArray[0], "cd")) {
-		for(int l = 0; l < directoryLength; ++l) {
-			ret = chdir(tokenArray[1]);
-			puts("Changing the current working directory");
+		ret = chdir(tokenArray[1]);
+		puts("Changing the current working directory");
 				
-			if( ret != 0) {
-				write(STDERR_FILENO, error_message, strlen(error_message));
-			}
+		if( ret != 0) {
+			write(STDERR_FILENO, error_message, strlen(error_message));
+			exit(0);
 		}
 	}
 	if( !strcmp(tokenArray[0], "path")) {
@@ -146,16 +145,16 @@ int main(int argc, char *argv[]){
 					c_pid = fork();
 					//execute within child process
 					if( c_pid == 0) {
-						//check whether file exists in given directory  error: ‘directoryLength’ undeclared (first use in this function)
-						for (int x = 0; x < directoryLength; ++x) {
+					//check whether file exists in given directory  error: ‘directoryLength’ undeclared (first use in this function)
+						//for (int x = 0; x < directoryLength; ++x) {
 							if( access(pathNames[x], X_OK) == 0) {
 								//check if given args can execute
-								if( execv(pathNames[x], execArgs) != -1) {
+								if( execvp(exexcArgs[0], execArgs) != -1) {
 									break;
 								}
 							} 
 							break;
-//error: ‘exec’ undeclared (first use in this function); did you mean ‘execl’? 
+					
 							if( exec == -1) {
 								write(STDERR_FILENO, error_message, strlen(error_message));
 							}
