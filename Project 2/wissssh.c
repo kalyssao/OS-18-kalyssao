@@ -16,30 +16,34 @@ char path[100];
 char commands[100];
 
 char error_message[30] = "An error has occurred\n";
-int commandLen;
+int commandLen = 0;
 
 void addCommand(char *argv) {
-	int i = 0;
-	commandLen = 0; //set command length to 0
+    int i = 0;
+    commandLen = 0; //set command length to 0
 
     while(argv != NULL){
         commands[i] = argv;
-		commandLen++;	//increment command length as there are values to add
+        commandLen++;   //increment command length as there are values to add
     }
     return; 
 }
 
 int checkBuiltIn(char *argv[]){
     if(!strcmp(argv[0], "exit")){
+        puts("exiting...");
         return 10;
     }
     if(!strcmp(argv[0], "cd")){
+        puts("changing directory...");
         return 9;
     }
     if(!strcmp(argv[0], "path")){
+        puts("changing path...");
         return 8;
     }
     else {
+        puts("Not a builtin command");
         return 7;
     }
 }
@@ -88,13 +92,13 @@ void executeBuiltIn(int a) {
         else { // two args
             while(path[i] != NULL) {
                 //path[i] = commands[j]; //overwriting the contents of the path
-		for(j=1; j<commandLen; ++j){ //at index 1, the first path to be copied
-                	strcpy(path[i], commands[j]);
-			i++;
-		}
-	    	path[i] = NULL;
-    	    }
-	}
+                for(j=1; j<commandLen; ++j){ //at index 1, the first path to be copied
+                        strcpy(path[i], commands[j]);
+                        i++;
+                }
+                path[i] = NULL;
+            }
+        }
     }
 }
 
@@ -129,96 +133,129 @@ int executeOther(){
 }
 
 //one argument means interactive mode
-void interactiveMode(){
+int interactiveMode(){
     char *input = NULL;
     size_t len = 0;
 
     int i = 1;
     int retBI;
+    int retEO;
 
     while(1) {
         fputs("wish> ", stdout);
         while(getline(&input, &len, stdin) != -1) { //while line
 
             //tokenize first item to commands array
-			char *lastToken = strtok( input, " "); 
+                        char *lastToken = strtok( input, " "); 
             addCommand(lastToken);
 
-			//while there are more words to tokenize
-			while( lastToken != NULL) {
-				addCommand(lastToken); //add command to command array
-				lastToken = strtok( NULL, " "); //next token - arguments
-				i++;
-			}
+                        //while there are more words to tokenize
+                        while( lastToken != NULL) {
+                                addCommand(lastToken); //add command to command array
+                                lastToken = strtok( NULL, " "); //next token - arguments
+                                i++;
+                        }
         }
-		printf("command is %s\n", commands[0]);
+                printf("command is %s\n", commands[0]);
         retBI = checkBuiltIn(commands[0]);
         if( retBI != 7){
-            executeBuiltIn(retBI);
+            executeBuiltIn(retBI); //re
             continue;
         }
         else {
-            executeOther(); //execute non builtin
+            retEO = executeOther(); //execute non builtin
+            if(retEO == 0) {
+                puts("Success!");
+                continue;
+            }
+            else {
+                break;
+            }
         }
     }
 }
 
-//more than one argument means batch mode
-void batchMode(char *argv[]) {
+//btchmode takes an array, attempts to open a file and
+int batchMode(char *argv[]) {
     //int retCOM;
-	int retBI;
+    int retBI;
     FILE *tokenFile;
 
     char str[1024];
-	tokenFile = fopen(argv[1], "r");
+    printf("Opening file named %s\n", argv[1]);
+    tokenFile = fopen(argv[1], "r");
     
-	// Check if the file doesn't exist
-	if( tokenFile == NULL) {
-		//bad batch file
-		write(STDERR_FILENO, error_message, strlen(error_message)); 
-		exit(1);
-	}
+    // Check if the file doesn't exist
+    if( tokenFile == NULL) {
+            //bad batch file
+            write(STDERR_FILENO, error_message, strlen(error_message)); 
+            exit(1);
+    }
 
-	// If it exists, open it, read the line and tokenize it
-	else {
-		while( fgets( str, 1024, tokenFile) != NULL) {	//first line
-			char *lastToken = strtok( str, " "); 
+        // If it exists, open it, read the line and tokenize it
+    else {
+        while( fgets( str, 1024, tokenFile) != NULL) {  //first line
+            char *lastToken = strtok( str, " "); 
 
-			//while there are words to tokenize
-			while( lastToken != NULL) {
-				addCommand(lastToken); //add command to command array
-				lastToken = strtok( NULL, " "); //next token - arguments
-			}
+            //while there are words to tokenize
+            while( lastToken != NULL) {
+                addCommand(lastToken); //add command to command array
+                lastToken = strtok( NULL, " "); //next token - arguments
+            }
 
-			// end of line - check first command for builtin
-			retBI = checkBuiltIn(commands[0]);
+            // end of line - check first command for builtin
+            retBI = checkBuiltIn(commands[0]);
 
-			if( retBI != 7) {
-            	executeBuiltIn(retBI);
-            	continue;
-        	}
+            if( retBI != 7) {
+                executeBuiltIn(retBI);
+                continue;
+            }
 
-        	else {
-            	executeOther(); //execute non builtin
-        	}
+            else {
+                executeOther(); //execute non builtin
+            }
 
-			commandLen = 0;
-		}
+            commandLen = 0;
+            return 0; //return success
+        }
     
     }
 }
 
-int main(int argc, char *argv[]) {
-	if(argc == 1) {
-		interactiveMode();
-		return 0; //return success - make interactive return a value and check?
-	}
-	if(argc == 2) {
-		batchMode(argv);
-		return 0;
-	}
-	else {
-		write(STDERR_FILENO, error_message, strlen(error_message));
-		return 1; //return failure
-	}
+void main(int argc, char *argv[]) {
+    int retB = ;//batch mode return
+    int retI = ; //interactive mode return
+    while(1) {
+        if(argc == 1) {
+            puts("entering interactive mode..");
+            retI = interactiveMode();
+    
+            if(retI == 0) {
+                puts("Interactive mode successful");
+                continue;
+            }
+    
+            else{
+                break;
+            }
+        }
+    
+        if(argc == 2) {
+            puts("entering batch mode...");
+            retB = batchMode(argv[]);
+    
+            if(retB == 0 ) {
+                puts("Success!");
+                continue;
+            }
+            else {
+                break;
+            }
+        }
+    
+        else {
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            break; //return failure
+        }
+    }
 }
