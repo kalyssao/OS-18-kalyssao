@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <process.h>
+#include <unistd.h>
 
 //define global arrays for commands and the path - should they initially be empty?
 
@@ -19,7 +19,7 @@ char error_message[30] = "An error has occurred\n";
 
 int commandLen;
 
-void addCommands(char *argv[]){
+/*void addCommands(char *argv[]){
     int i;
     while(argv[i] != NULL){
         commandLen = 0;
@@ -28,7 +28,7 @@ void addCommands(char *argv[]){
         commandLen++;
 
     }
-}
+}*/
 int checkBuiltIn(char *argv[]){
     if(!strcmp(argv[0], "exit")){
         return 10;
@@ -46,7 +46,7 @@ int checkBuiltIn(char *argv[]){
 
 void executeBuiltIn(int a) {
     int i = 0;
-    int j = 0;
+    int j;
     int retCH;
     
     char dir[100];
@@ -80,22 +80,26 @@ void executeBuiltIn(int a) {
     if(a == 8) {  //path - check if zero or more
         if(commandLen == 1) { //no arg - run nothing except builtin
             path[0] = NULL; //should the whole path be equated to NULL?
-            fputs("You can only run builtins");
+            puts("You can only run builtins");
         }
         if(commandLen == 2) { //one arg - overwrite current path
-            while(path[i] commands[1];){
-
-            }
-            
+            strcpy(path, commands[1]);
         }
-        else { //
+        else { // two args
             while(path[i] != NULL) {
-                //path[i] = commands[j]; //overwriting the contents of the 
-                strncpy(path[i], NULL);
-                i++;
-            path[i] = NULL;
-    }
+                //path[i] = commands[j]; //overwriting the contents of the path
+		for(j=1; j<commandLen; ++j){ //at index 1, the first path to be copied
+                	strcpy(path[i], commands[j]);
+			i++;
+		}
+	    	path[i] = NULL;
+    	    }
+	}
 }
+
+// path = [path /bin /user/bin NULL]
+// commands = [cd /user/bin]
+
 
 int executeOther(){
     int i;
@@ -104,11 +108,11 @@ int executeOther(){
 
     c_pid = fork();
     while(path[i] != NULL) {
-        if(access(path[i], X_OK)) != 0) {
+        if(access(path[i], X_OK) != 0) {
             //write error
         }
         else {
-            retEO = execvp(commands[0], commands);
+            retEO = execvp(&commands[0], commands); //warning pass argument two from incompatible type
 
             if(retEO == -1) {
                 i++;
@@ -135,7 +139,7 @@ void interactiveMode(){
     int retBI;
     
     while(1) {
-        fputs("wish> ");
+        fputs("wish> ", stdout);
         while(getline(&input, &len, stdin) != -1) {
             //while line is readable, tokenize contents to commands array
             commands[i] = tokenize(&input);
@@ -155,4 +159,20 @@ void interactiveMode(){
 void batchMode(int argc, char *argv[]) {
     if(argc > 1) { //more than one argument means batch mode
         //read argv array into commands array
+	}
+}
+
+int main(int argc, char *argv[]) {
+	if(argc == 1) {
+		interactiveMode();
+		return 0; //return success - make interactive return a value and check?
+	}
+	if(argc == 2) {
+		batchMode(argc, argv);
+		return 0;
+	}
+	else {
+		write(STDERR_FILENO, error_message, strlen(error_message));
+		return 1; //return failure
+	}
 }
