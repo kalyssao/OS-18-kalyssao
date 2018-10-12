@@ -16,19 +16,19 @@ char path[100];
 char commands[100];
 
 char error_message[30] = "An error has occurred\n";
-
 int commandLen;
 
-/*void addCommands(char *argv[]){
-    int i;
-    while(argv[i] != NULL){
-        commandLen = 0;
-   
-        commands[0] = argv[i];
-        commandLen++;
+void addCommand(char *argv) {
+	int i = 0;
+	commandLen = 0; //set command length to 0
 
+    while(argv != NULL){
+        commands[i] = argv;
+		commandLen++;	//increment command length as there are values to add
     }
-}*/
+    return; 
+}
+
 int checkBuiltIn(char *argv[]){
     if(!strcmp(argv[0], "exit")){
         return 10;
@@ -95,12 +95,10 @@ void executeBuiltIn(int a) {
 	    	path[i] = NULL;
     	    }
 	}
+    }
 }
 
-// path = [path /bin /user/bin NULL]
-// commands = [cd /user/bin]
-
-
+//if not builtin - execute
 int executeOther(){
     int i;
     int retEO;
@@ -130,21 +128,30 @@ int executeOther(){
     return 1;
 }
 
+//one argument means interactive mode
 void interactiveMode(){
     char *input = NULL;
     size_t len = 0;
-    ssize_t read;
 
-    int i = 0;
+    int i = 1;
     int retBI;
-    
+
     while(1) {
         fputs("wish> ", stdout);
-        while(getline(&input, &len, stdin) != -1) {
-            //while line is readable, tokenize contents to commands array
-            commands[i] = tokenize(&input);
-            i++;
+        while(getline(&input, &len, stdin) != -1) { //while line
+
+            //tokenize first item to commands array
+			char *lastToken = strtok( input, " "); 
+            addCommand(lastToken);
+
+			//while there are more words to tokenize
+			while( lastToken != NULL) {
+				addCommand(lastToken); //add command to command array
+				lastToken = strtok( NULL, " "); //next token - arguments
+				i++;
+			}
         }
+		printf("command is %s\n", commands[0]);
         retBI = checkBuiltIn(commands[0]);
         if( retBI != 7){
             executeBuiltIn(retBI);
@@ -156,10 +163,49 @@ void interactiveMode(){
     }
 }
 
-void batchMode(int argc, char *argv[]) {
-    if(argc > 1) { //more than one argument means batch mode
-        //read argv array into commands array
+//more than one argument means batch mode
+void batchMode(char *argv[]) {
+    //int retCOM;
+	int retBI;
+    FILE *tokenFile;
+
+    char str[1024];
+	tokenFile = fopen(argv[1], "r");
+    
+	// Check if the file doesn't exist
+	if( tokenFile == NULL) {
+		//bad batch file
+		write(STDERR_FILENO, error_message, strlen(error_message)); 
+		exit(1);
 	}
+
+	// If it exists, open it, read the line and tokenize it
+	else {
+		while( fgets( str, 1024, tokenFile) != NULL) {	//first line
+			char *lastToken = strtok( str, " "); 
+
+			//while there are words to tokenize
+			while( lastToken != NULL) {
+				addCommand(lastToken); //add command to command array
+				lastToken = strtok( NULL, " "); //next token - arguments
+			}
+
+			// end of line - check first command for builtin
+			retBI = checkBuiltIn(commands[0]);
+
+			if( retBI != 7) {
+            	executeBuiltIn(retBI);
+            	continue;
+        	}
+
+        	else {
+            	executeOther(); //execute non builtin
+        	}
+
+			commandLen = 0;
+		}
+    
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -168,7 +214,7 @@ int main(int argc, char *argv[]) {
 		return 0; //return success - make interactive return a value and check?
 	}
 	if(argc == 2) {
-		batchMode(argc, argv);
+		batchMode(argv);
 		return 0;
 	}
 	else {
