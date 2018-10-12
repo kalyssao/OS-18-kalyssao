@@ -12,19 +12,28 @@
 
 //define global arrays for commands and the path - should they initially be empty?
 
-char path[100];
+char path[900];
 char commands[100];
 
 char error_message[30] = "An error has occurred\n";
 int commandLen = 0;
 
+void addCommand(char *argv);
+int checkBuiltIn(char *argv[]);
+int executeOther();
+void executeBuiltIn(int);
+int batchMode(char *argv[]);
+int interactiveMode();
+
 void addCommand(char *argv) {
     int i = 0;
+	int j = 0;
     commandLen = 0; //set command length to 0
 
     while(argv != NULL){
-        commands[i] = argv;
+        commands[i] = argv[j];
         commandLen++;   //increment command length as there are values to add
+		j++;
     }
     return; 
 }
@@ -57,14 +66,22 @@ void executeBuiltIn(int a) {
     
     if(a == 10) { //exit
         exit(0);
-        
     }
+	
+	//cd /cat/richChigga
+	//check for exactly 2 commands
+	//execute chdir(/cat/richChigga)
+	//check to see the return value of chdir
+	//if it is successful it means chigga got lit!!!
+	//if not print thatlooooong error message and then exit
+	//chigga ain't so lit anymore :-(
+	//result /bin/cat
     if(a == 9) { //cd
         while(path[i] != NULL) { //raises type mismatch error
             strcpy(dir, path[i]);
             strcat(dir, "/");
             strcat(dir, commands[0]); //parameter count does not agree with previous definition
-
+			//CHECK IF IT WORKSSSSSSSSSSS
             retCH = chdir(dir);
 
             if(retCH != 0) {
@@ -82,19 +99,25 @@ void executeBuiltIn(int a) {
     }
     //enquiring minds want to know! - commandLen var in which function?
     if(a == 8) {  //path - check if zero or more
-        if(commandLen == 1) { //no arg - run nothing except builtin
+        
+		if(commandLen == 1) { //no arg - run nothing except builtin
             path[0] = NULL; //should the whole path be equated to NULL?
             puts("You can only run builtins");
         }
-        if(commandLen == 2) { //one arg - overwrite current path
-            strcpy(path, commands[1]);
+        
+		if(commandLen == 2) { //one arg - overwrite current path
+		//could use an assignment, commands[i] = new_path
+		//make others NULL
+            path[0] = commands[i];// = strcpy(path, commands[1]);
         }
-        else { // two args
-            while(path[i] != NULL) {
-                //path[i] = commands[j]; //overwriting the contents of the path
-                for(j=1; j<commandLen; ++j){ //at index 1, the first path to be copied
-                        strcpy(path[i], commands[j]);
-                        i++;
+		//path = 0 /bin 1 /binbin NULL
+		//command = path /stuff /path
+		//commandLen = 3
+        else {
+            while(path[i] != NULL) {  //two for loops - first is
+                for(j = 1; j < commandLen; ++j) { //at index 1, the first path to be copied
+                    path[i] = commands[j]; //overwriting the contents of the path
+                    i++;
                 }
                 path[i] = NULL;
             }
@@ -111,7 +134,7 @@ int executeOther(){
     c_pid = fork();
     while(path[i] != NULL) {
         if(access(path[i], X_OK) != 0) {
-            //write error
+            write(STDERR_FILENO, error_message, strlen(error_message));
         }
         else {
             retEO = execvp(&commands[0], commands); //warning pass argument two from incompatible type
@@ -141,13 +164,13 @@ int interactiveMode(){
     int retBI;
     int retEO;
 
-    while(1) {
+    while(1) { // check for exit entry for while loop 
         fputs("wish> ", stdout);
         while(getline(&input, &len, stdin) != -1) { //while line
 
             //tokenize first item to commands array
-                        char *lastToken = strtok( input, " "); 
-            addCommand(lastToken);
+            char *lastToken = strtok( input, " "); 
+            //addCommand(lastToken);
 
                         //while there are more words to tokenize
                         while( lastToken != NULL) {
@@ -156,6 +179,7 @@ int interactiveMode(){
                                 i++;
                         }
         }
+		
                 printf("command is %s\n", commands[0]);
         retBI = checkBuiltIn(commands[0]);
         if( retBI != 7){
@@ -223,6 +247,8 @@ int batchMode(char *argv[]) {
 }
 
 void main(int argc, char *argv[]) {
+	//initialise path[0] to bin, path[1] = NULL
+	
     int retB = ;//batch mode return
     int retI = ; //interactive mode return
     while(1) {
