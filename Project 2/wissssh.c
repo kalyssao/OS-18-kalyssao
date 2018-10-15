@@ -36,7 +36,6 @@ int addCommands(char *argv[], int tokenLen) {
 		j++;
 	}
 	commandLen = tokenLen;
-	printf("%s successfully added to commands array\n", commands[0]);
 	return 0; //return success
 }
 
@@ -46,7 +45,6 @@ int addCommand(char *argv) { //adds a single command
     //int i = 0;
 	//int j = 0;
     commandLen = 0; //set command length to 0
-    //while(argv){
     commands[0] = argv;
 	printf("Successfully added command %s\n", commands[0]);
     commandLen++;   //increment command length as there are values to add
@@ -160,7 +158,6 @@ int executeOther() {
 					continue;		
 			}
 			else {
-				puts("about to execvp..");
 				retEO = execvp(commands[0], commands); //execvp given command
 				
 				if(retEO == -1) {
@@ -197,14 +194,12 @@ int interactiveMode() {
     while(1) { // check for exit entry for while loop 
         fputs("wish> ", stdout);
         while(getline(&input, &len, stdin) != -1) { //while line
-			printf("input read is %s", input);
-			char* p = strchr(input,'\n');
+		char* p = strchr(input,'\n');
     			if (p) {
       				*p = '\0';
 					//tokenize first item to commands array
             		char *lastToken = strtok( input, " "); 
 					tokenLen++;
-            		printf("token is %s\n", lastToken);//addCommand(lastToken);
 
                     //while there are more words to tokenize
                     while( lastToken != NULL ) {
