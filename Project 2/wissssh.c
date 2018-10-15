@@ -93,7 +93,7 @@ void executeBuiltIn(int a) {
     if(a == 9) { //cd
 		printf("time for cd\n");
 		if(commandLen == 2) {
-			while(path[i] != '\0') {
+			while(*path[i] != '\0') {
 
 
 				gdir = getcwd(buf, sizeof(buf));
