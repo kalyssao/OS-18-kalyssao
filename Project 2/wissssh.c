@@ -14,7 +14,7 @@
 
 //define global arrays for commands and the path - should they initially be empty?
 
-char path[900] = "/bin";
+char *path[900];
 
 char *commands[900];
 
@@ -60,11 +60,9 @@ int checkBuiltIn(char argv[]){
         return 9;
     }
     if(!strcmp(&argv[0], "path")){
-        puts("changing path...");
         return 8;
     }
     else {
-        puts("Not a builtin command");
         return 7;
     }
 }
@@ -73,13 +71,17 @@ void executeBuiltIn(int a) {
     int i = 0;
     int j;
     int retCH;
+	char buf[1024];
+
     printf("command length is %d\n", commandLen);
-    //char dir[100];
-    
+    char *dir;
+	char *gdir;
+	char *inter;
+
     if(a == 10) { //exit
         exit(0);
     }
-	
+
 	//cd /cat/richChigga
 	//check for exactly 2 commands
 	//execute chdir(/cat/richChigga)
@@ -89,58 +91,67 @@ void executeBuiltIn(int a) {
 	//chigga ain't so lit anymore :-(
 	//result /bin/cat
     if(a == 9) { //cd
+		printf("time for cd\n");
 		if(commandLen == 2) {
-	        //while(*path[i] != NULL) {
-			retCH = chdir(commands[1]);
-            /*strcpy(dir, path[i]);
-            strcat(dir, "/");
-            strcat(dir, commands[0]); //parameter count does not agree with previous definition
-			//CHECK IF IT WORKSSSSSSSSSSS*/
-            //retCH = chdir(dir);
+			while(path[i] != '\0') {
 
-            if(retCH != 0) {
+
+				gdir = getcwd(buf, sizeof(buf));
+            	inter = strcat(gdir, "/");
+            	dir = strcat(inter, commands[1]);
+
+            	
+				retCH = chdir(dir);
+				//printf("directory is %s\n", &dir[0]);
+
+            	if(retCH != 0) {
                 //failure - incorrect path maybe?
-                //i++;
-                //continue;
-				write(STDERR_FILENO, error_message, strlen(error_message));
-				exit(1);
-            }
-            else {
-                //change was successful - break
-                printf("Successfully changed directory to %s\n", commands[1]);
-				return;
-            }
-        }
+                	i++;
+                	continue;
+				}
+
+            	else {
+                	//change was successful - break
+                	printf("Successfully changed directory to %s\n", commands[1]);
+					return;
+            	}
+        	}
+			write(STDERR_FILENO, error_message, strlen(error_message));
+			return;
+		}
 		//more or less than 1 parameter
         write(STDERR_FILENO, error_message, strlen(error_message));
 		return;
     }
 
     if(a == 8) {  //path - check if zero or more
+        printf("path changing\n");
+		printf("still %d\n", commandLen);
+		/*if(commandLen == 2) { //no arg - run nothing except builtin
+            //path[0] = '\0'; //should the whole path be equated to NULL?
+            printf("You can only run builtins");
+        }*/
         
-		if(commandLen == 1) { //no arg - run nothing except builtin
-            path[0] = '\0'; //should the whole path be equated to NULL?
-            puts("You can only run builtins");
-        }
-        
-		if(commandLen == 2) { //one arg - overwrite current path
+		if(commandLen == 3) { //one arg - overwrite current path
 		//could use an assignment, commands[i] = new_path
 		//make others NULL
 			
             //path[0] = commands[1];// = 
-			path[0] = *commands[1];
+			//path[0] = commands[1];
+			printf("test");
         }
 
         else {
-            while(path[i] != '\0') {  //two for loops - first is
+            while(*path[i] != '\0') {  //two for loops - first is
                 for(j = 1; j < commandLen; ++j) { //at index 1, the first path to be copied
-                    path[i] = *(commands[j]); //overwriting the contents of the path
+                    path[i] = commands[j]; //overwriting the contents of the path
                     i++;
                 }
                 path[i] = '\0';
             }
         }
     }
+	return;
 }
 
 //if not builtin - execute
@@ -152,8 +163,8 @@ int executeOther() {
 
     c_pid = fork();
     if(c_pid == 0) {
-		while(path[i] != '\0') {
-			if(access(&path[i], X_OK) != 0) { //path is legit
+		while(*path[i] != '\0') {
+			if(access(path[i], X_OK) != 0) { //path is legit
 				    i++;
 					continue;		
 			}
@@ -161,11 +172,11 @@ int executeOther() {
 				retEO = execvp(commands[0], commands); //execvp given command
 				
 				if(retEO == -1) {
-					puts("there was a problem..");	    
+					printf("there was a problem..");	    
 				}
 
 				else {
-					puts("success");
+					printf("success");
 					return 0; //successful execution
 				}
 			}	
@@ -218,7 +229,7 @@ int interactiveMode() {
 						break;
 					}
 					else {
-						printf("command is %s\n", commands[0]);
+						
         				retBI = checkBuiltIn(commands[0]);
 
         				if( retBI != 7){
@@ -227,10 +238,9 @@ int interactiveMode() {
         				}
 
 						else {
-							puts("executing other..\n");
 							retEO = executeOther(); //execute non builtin
 							if(retEO == 0) {
-								puts("Success!");
+								printf("Success!");
 								return 0;
 							}
 							else {
@@ -265,8 +275,7 @@ int batchMode(char *argv[]) {
     char str[1024];
 
     tokenFile = fopen(argv[1], "r");
-	printf("Opening file named %s\n", argv[1]);
-    
+    while(1) {
     // Check if the file doesn't exist
     if( tokenFile == NULL) {
             //bad batch file
@@ -296,7 +305,7 @@ int batchMode(char *argv[]) {
 						break;
 				}
 				else {
-					printf("command is %s\n", commands[0]);
+					
 				    // end of line - check first command for builtin
 				    retBI = checkBuiltIn(commands[0]);
 
@@ -305,6 +314,7 @@ int batchMode(char *argv[]) {
 						retO = executeOther(); 
 
 						if (retO == 0) { //success
+							printf("success");
 							return 0;
 						}
 						printf("error executing %s\n", commands[0]);
@@ -329,10 +339,12 @@ int batchMode(char *argv[]) {
 	write(STDERR_FILENO, error_message, strlen(error_message));
 	exit(1);
 }
+}
 
 int main(int argc, char *argv[]) {
 	//initialise path[0] to bin, path[1] = NULL
-	
+	path[0] = "/bin";
+	path[1] = '\0';
     int retB;//batch mode return
     int retI; //interactive mode return
     //while(1) {
