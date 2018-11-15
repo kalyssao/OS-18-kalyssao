@@ -1,8 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <stdlib.h>
 
 #define COMMAND_LEN 100
 #define PARAM_LEN 10
@@ -43,8 +43,9 @@ int parse_commands(char *cmd, char **params) {
 		path_file = fopen("paths.txt","w+");
 		// adding to path var
 		for (int k = 1; k < PARAM_LEN; k++) {
-			paths[paramCount] = params[k];
-			fprintf(path_file,"%s\n", paths[paramCount]);
+			paths[paramCount] = &params[k];
+			printf("%s", params[k]);
+			fprintf(path_file,"%s\n", *paths[paramCount]);
 			paramCount++;
 			if(params[k] == '\0') break;
 		}
@@ -53,7 +54,7 @@ int parse_commands(char *cmd, char **params) {
 
 	child_pid = fork();
 	if(child_pid == 0)	{
-		evexvp(cmd, params);
+		evecvp(cmd, params);
 	}
 	else	{
 		waitpid(child_pid, &stat_loc, WUNTRACED);
@@ -69,7 +70,7 @@ int main(int argc, char const *argv[])
 	char cmd[COMMAND_LEN];
 	char *params[PARAM_LEN];
 
-	//int cmdCount = 0;
+	int cmdCount = 0;
    
    // interactive mode
 	if(argc == 1)	{
