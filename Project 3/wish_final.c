@@ -7,10 +7,9 @@
 #define COMMAND_LEN 100
 #define PARAM_LEN 10
 
-FILE *path_file;
-int is_builtin(char **params){
-	return 0;
-}
+char error_message[30] = "An error has occurred\n";
+
+int execvp(const char *file, char *const argv[]); 
 
 int parse_commands(char *cmd, char **params) {
 	int paramCount = 0;
@@ -22,10 +21,9 @@ int parse_commands(char *cmd, char **params) {
 	// parse cmd string into params array untill NULL, then break
 	for (int i = 0; i < PARAM_LEN; i++) {
 		params[i] = strsep(&cmd, " ");
-		printf("%s \n", params[i]);
 		if(params[i] == '\0') break;
+		else continue;
 	}
-
 	// break if exit was entered
 	if(strcmp(params[0], "exit") == 0){
 		exit(0);
@@ -33,28 +31,39 @@ int parse_commands(char *cmd, char **params) {
 
 	// check other builtins (cd and path)
 	if(strcmp(params[0], "cd") == 0)  {
-		char *directory = "/";
-		char *x = strcat(directory, params[1]);
-		chdir(x);
-		return 1;
-	}
+		char directory[COMMAND_LEN] = "/";
 
-	if(strcmp(params[0], "path") == 0){
-		path_file = fopen("paths.txt","w+");
-		// adding to path var
-		for (int k = 1; k < PARAM_LEN; k++) {
-			paths[paramCount] = &params[k];
-			printf("%s", params[k]);
-			fprintf(path_file,"%s\n", *paths[paramCount]);
-			paramCount++;
-			if(params[k] == '\0') break;
+		strcat(directory, params[1]);
+		
+		if( chdir(directory) != 0){
+			write(STDERR_FILENO, error_message, strlen(error_message)); 
 		}
 		return 1;
 	}
 
+	if(strcmp(params[0], "path") == 0){
+		FILE *path_file = fopen("pathfile.txt","w+");
+
+		if (path_file == NULL)	{
+		    write(STDERR_FILENO, error_message, strlen(error_message)); 
+		}
+
+		// adding to path file
+		for (int k = 1; k < PARAM_LEN; k++) {
+
+			//paths[paramCount] = &params[k];
+			if(params[k] == '\0') break;
+			fprintf(path_file,"%s\n", params[k]);
+			
+		}
+		fclose(path_file);
+		return 1;
+	}
+	
 	child_pid = fork();
-	if(child_pid == 0)	{
-		evecvp(cmd, params);
+	if( child_pid == 0)	{
+		fprintf(stdout, "Executing %s\n", params[0]);
+		execvp(params[0], params);
 	}
 	else	{
 		waitpid(child_pid, &stat_loc, WUNTRACED);
@@ -88,8 +97,6 @@ int main(int argc, char const *argv[])
 
 			// parse command into parameter array
 			parse_commands(cmd, params);
-
-			//if(execute_cmd(params) == 0) break;
 		}
 		return 0;
 	}
@@ -97,9 +104,10 @@ int main(int argc, char const *argv[])
 	// batch mode - open specified text file
 	if(argc == 2)	{
 		token_file = fopen(argv[1], "r");
+		FILE *path_file = fopen("pathfile.txt","r");
 
 		while(1) {
-			fputs("batch mode", stdout);
+			fputs("batch mode\n", stdout);
 
 			// check that file exists
 			if(token_file == NULL) {
@@ -110,8 +118,6 @@ int main(int argc, char const *argv[])
 			while(fgets(cmd, sizeof(cmd), token_file) == NULL) fclose(token_file);
 			parse_commands(cmd, params);
 			if(strcmp(params[0], "exit") == 0) break;
-
-			// exect
 		}
 	}
 	
