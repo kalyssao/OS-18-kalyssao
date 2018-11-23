@@ -12,11 +12,17 @@
 
 char error_message[30] = "An error has occurred\n";
 char *redirectArray[20];
+char *interArray[PARAM_LEN];
+
 char redirect[600]="";
+char parallel[600]="";
 char filename[600] = "";
 
+pthread_t threadArray[PARAM_LEN];
+
 int execvp(const char *file, char *const argv[]); 
-int execute(char* *params);
+void *execute2();
+int execute(char** params);
 
 void redirection(){
 	
@@ -37,7 +43,21 @@ void redirection(){
 	}
 }
 
-int execute(char* *params){
+void* execute2(){
+		pid_t child_pid = fork();
+		if( child_pid == 0)	{
+			execvp(interArray[0], interArray);
+			//return 0;
+		}
+		else	{
+			int x;
+			waitpid(child_pid, &x, 0);
+			//return 1;
+		}
+	
+	}
+
+	int execute(char ** params){
 		pid_t child_pid = fork();
 		if( child_pid == 0)	{
 			execvp(params[0], params);
@@ -58,13 +78,19 @@ void parse_commands(char *cmd, char **params) {
 	pid_t child_pid;
 	
 	char **paths[PARAM_LEN];
+	
 	// parse cmd string into params array untill NULL, then break
 	for (int i = 0; i < PARAM_LEN; i++) {
 		params[i] = strsep(&cmd, " ");
+		//interArray[i] = params[i];
 		if(params[i] == '\0') break;
 
 		if(strcmp(params[i], ">") == 0){
 			strcpy(redirect, "yes");
+		}
+
+		if(strcmp(params[i], "&") == 0){
+			strcpy(parallel, "sure");
 		}
 	}
 
@@ -74,7 +100,31 @@ void parse_commands(char *cmd, char **params) {
 		exit(0);
 	}
 
-	if(strcmp(redirect, "yes") == 0){
+	else if(strcmp(parallel, "sure") == 0){
+		int k =0;
+		for(int i = 0; i < 10; i++){
+			if(params[i]==NULL){
+				pthread_create( &threadArray[i], NULL, execute2,  NULL);
+				pthread_join( threadArray[i], NULL); 
+				//execute(interArray);
+				break;
+			}
+			if(strcmp(params[i], "&")!=0){
+				interArray[k] = params[i];
+				k++;
+			}
+			else{
+				k =0;
+				pthread_create( &threadArray[i], NULL, execute2,  NULL);
+				pthread_join( threadArray[i], NULL); 
+				//execute(interArray);
+				memset(interArray, 0, sizeof (interArray));
+				//printf("%s\n", interArray[0]);
+			}
+		}
+	}
+
+	else if(strcmp(redirect, "yes") == 0){
 		for(int i = 0; i < PARAM_LEN; i++){
 			if(strcmp(params[i], ">")!=0){
 				redirectArray[i] = params[i];
@@ -92,7 +142,7 @@ void parse_commands(char *cmd, char **params) {
 	}
 
 	// check other builtins (cd and path)
-	if(strcmp(params[0], "cd") == 0)  {
+	else if(strcmp(params[0], "cd") == 0)  {
 		char directory[COMMAND_LEN] = "/";
 
 		strcat(directory, params[1]);
@@ -103,7 +153,7 @@ void parse_commands(char *cmd, char **params) {
 		//return 1;
 	}
 
-	if(strcmp(params[0], "path") == 0){
+	else if(strcmp(params[0], "path") == 0){
 			FILE *path_file = fopen("pathfile.txt","w+");
 
 			if (path_file == NULL)	{
@@ -125,8 +175,7 @@ void parse_commands(char *cmd, char **params) {
 	//printf("%s\n", "kkkk");
 
 
-
-	if(execute(params)==0){
+	else if(execute(params)==0){
 	 	exit(0);
 	 }
 	//return 0;
