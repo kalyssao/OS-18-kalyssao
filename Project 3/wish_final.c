@@ -3,17 +3,25 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define COMMAND_LEN 100
 #define PARAM_LEN 10
 
 char error_message[30] = "An error has occurred\n";
 
+int redirect(char **params);
 int execvp(const char *file, char *const argv[]); 
+
+pthread_t threads[PARAM_LEN];
+char cmds[COMMAND_LEN];
 
 int parse_commands(char *cmd, char **params) {
 	int paramCount = 0;
 	int stat_loc;
+	int t1;
 
 	pid_t child_pid;
 	
@@ -21,7 +29,17 @@ int parse_commands(char *cmd, char **params) {
 	// parse cmd string into params array untill NULL, then break
 	for (int i = 0; i < PARAM_LEN; i++) {
 		params[i] = strsep(&cmd, " ");
+		strcpy(cmds[i], params[i]);
 		if(params[i] == '\0') break;
+		if(params[i] == '>'){
+			//redirection
+			int fw = open(params[i+1], O_APPEND|O_WRONLY);
+			/* child_pid = 
+			for(int k = 0; k < i; ) */
+		}
+		if(params[i] == '&'){
+			child_pid = 
+		}
 		else continue;
 	}
 	// break if exit was entered
@@ -125,4 +143,16 @@ int main(int argc, char const *argv[])
 		return 1;
 	} */
 
+}
+
+
+// if ampersand = create thread
+int pthread_create(pthread_t * thread, const pthread_attr_t * attr, void * (*start_routine)(void *), void *arg);
+int pthread_join(pthread_t th, void **thread_return);
+void pthread_exit(void *retval);
+
+if(params[i] == "&"){
+	for(int k = 0; k < i; k++){
+
+	}
 }
