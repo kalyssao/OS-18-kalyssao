@@ -179,6 +179,9 @@ void parse_commands(char *cmd, char **params) {
 	 	exit(0);
 	 }
 	//return 0;
+	else{
+		write(STDERR_FILENO, error_message, strlen(error_message));
+	}
 }
 
 
